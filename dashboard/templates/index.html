@@ -20,6 +20,7 @@
       align-items: center; gap: 12px; flex-wrap: wrap; }
     .controls input[type=range] { width: 220px; }
     .pill { font-size: 12px; background: rgba(255,255,255,.15); padding: 3px 8px; border-radius: 10px; }
+    .pill.big { font-size: 14px; font-weight: 700; padding: 4px 10px; transition: background .2s; }
     .card { background: #fff; border: 1px solid #e2e2e0; border-radius: 8px; padding: 10px 12px;
       margin-bottom: 12px; }
     .card h2 { margin: 0 0 6px; font-size: 14px; text-transform: uppercase; letter-spacing: .04em; color: #12343b; }
@@ -41,6 +42,10 @@
   <div class="controls">
     <label>Heatwave: <input id="heat" type="range" min="0" max="100" value="0" /></label>
     <span class="pill" id="heatval">0%</span>
+    <span class="pill big" id="maxrisk">max risk --</span>
+    <span class="pill" id="atrisk">-- zones at risk</span>
+    <span class="pill" id="target">excavate -- t/day</span>
+    <span class="pill" id="unalloc">unallocated -- t</span>
     <span class="pill" id="clock">--</span>
     <span class="pill" id="wind">wind --</span>
     <span class="legend">
@@ -83,13 +88,22 @@
         L.circleMarker([p.lat, p.lon], { radius: 6, color: "#2c3e50", fillColor: "#2c3e50",
           fillOpacity: .9 }).addTo(layer).bindTooltip(`${p.name} (${p.tonnes} t)`);
       });
-      // zones
+      // zones - radius grows with risk so high-risk zones visibly swell
       s.zones.forEach(z => {
-        L.circleMarker([z.lat, z.lon], { radius: 11, color: "#333", weight: 1,
+        L.circleMarker([z.lat, z.lon], { radius: 9 + z.risk * 45, color: "#333", weight: 1,
           fillColor: COLORS[z.color], fillOpacity: .85 }).addTo(layer)
           .bindTooltip(`Zone ${z.zone_id}: risk ${(z.risk*100).toFixed(1)}%`);
       });
 
+      // live readouts
+      const maxRisk = Math.max(...s.zones.map(z => z.risk));
+      const atRisk = s.zones.filter(z => z.color !== "green").length;
+      const mr = document.getElementById("maxrisk");
+      mr.textContent = "max risk " + (maxRisk * 100).toFixed(0) + "%";
+      mr.style.background = maxRisk >= 0.15 ? COLORS.red : (maxRisk >= 0.05 ? COLORS.amber : COLORS.green);
+      document.getElementById("atrisk").textContent = atRisk + "/12 zones at risk";
+      document.getElementById("target").textContent = "excavate " + s.excavation_target.toLocaleString() + " t/day";
+      document.getElementById("unalloc").textContent = "unallocated " + Math.round(s.total_unallocated).toLocaleString() + " t";
       document.getElementById("clock").textContent = s.timestamp;
       document.getElementById("wind").textContent = "wind from " + s.wind_from_deg + "°";
       document.getElementById("alert").textContent = s.resident_alert;

@@ -82,6 +82,8 @@ def compute_state(hour_idx: int, heatwave_pct: float) -> dict:
 
     return {
         "timestamp": str(ts), "heatwave": heatwave_pct, "wind_from_deg": round(wind),
+        "excavation_target": excavation_target,
+        "total_excavated": plan["total_excavated_tonnes"],
         "ghazipur": GHAZIPUR, "zones": zones, "plants": plants_out,
         "dig_order": plan["dig_order"], "routing": plan["routing"],
         "plant_utilisation": plan["plant_utilisation"],
