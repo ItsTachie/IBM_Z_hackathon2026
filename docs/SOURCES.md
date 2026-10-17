@@ -101,8 +101,10 @@ distances from Ghazipur are APPROX (indicative, for routing-cost demonstration).
 
 ## Real-data limits (why sensors are simulated)
 
-- Weather (temp/humidity/wind/precip): **real + free** via Open-Meteo ERA5 (no key) —
-  https://open-meteo.com/en/docs/historical-weather-api — reserved for future work.
+- Weather (temp/humidity/wind/precip): **real + free** via Open-Meteo (no key) —
+  https://open-meteo.com/en/docs — **now wired into the dashboard's "Live weather" toggle**
+  (real current Ghazipur air temp, humidity, wind, and days-since-rain drive the model;
+  per-zone surface temp + methane stay simulated).
 - Fire detections: **real + free** via NASA FIRMS VIIRS 375 m (Earthdata login) —
   https://firms.modaps.eosdis.nasa.gov/active_fire/ — reserved for future work.
 - Methane at per-zone resolution: **does not exist publicly.** TROPOMI ~7 km, GHGSat is

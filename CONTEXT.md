@@ -26,8 +26,10 @@ Real-time decision-support for Delhi's Ghazipur landfill, built as a
 - **Real-world figures** (landfill size, waste-fraction percentages, plant capacities) are
   documented with source URLs in **`docs/SOURCES.md`**; anything without a source is marked
   **UNVERIFIED**.
-- Open-Meteo weather and NASA FIRMS fire detections are noted as real-data options for
-  **future work**, not used in the current build.
+- **Open-Meteo weather is live** via the dashboard's optional "Live weather" toggle — real
+  current Ghazipur air temp, humidity, wind and days-since-rain feed the model, while per-zone
+  surface temperature and methane stay simulated (no real feed exists for those). NASA FIRMS
+  fire detections remain future work.
 
 ## Compute / hard constraint
 

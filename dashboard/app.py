@@ -22,6 +22,7 @@ import joblib          # noqa: E402
 import pandas as pd    # noqa: E402
 from optimiser import optimise, load_plants  # noqa: E402
 import genai           # noqa: E402
+import weather         # noqa: E402
 
 app = Flask(__name__)
 
@@ -52,9 +53,29 @@ def apply_heatwave(rows, pct: float):
     return rows
 
 
-def compute_state(hour_idx: int, heatwave_pct: float) -> dict:
+def compute_state(hour_idx: int, heatwave_pct: float, live: bool = False) -> dict:
     ts = TIMESTAMPS[hour_idx % len(TIMESTAMPS)]
-    rows = DF[DF["timestamp"] == ts].sort_values("zone_id")
+    rows = DF[DF["timestamp"] == ts].sort_values("zone_id").copy()
+
+    # Hybrid live weather: real Open-Meteo weather drives air temp / humidity / wind /
+    # drought; per-zone surface temp + methane stay SIMULATED (no real feed exists). We
+    # preserve each zone's simulated "surface excess" (solar + self-heating) on top of the
+    # real air temperature.
+    weather_mode, live_weather = "simulated", None
+    if live:
+        w = weather.get_live_weather()
+        if w:
+            excess = rows["surface_temp_c"] - rows["ambient_temp_c"]
+            rows["ambient_temp_c"] = w["ambient_temp_c"]
+            rows["surface_temp_c"] = w["ambient_temp_c"] + excess
+            rows["humidity_pct"] = w["humidity_pct"]
+            rows["wind_speed_kmh"] = w["wind_speed_kmh"]
+            rows["wind_direction_deg"] = w["wind_direction_deg"]
+            rows["days_since_rain"] = w["days_since_rain"]
+            weather_mode, live_weather = "live", w
+        else:
+            weather_mode = "live-unavailable"
+
     rows = apply_heatwave(rows, heatwave_pct)
 
     proba = MODEL.predict_proba(rows[FEATURES])[:, 1]
@@ -84,6 +105,7 @@ def compute_state(hour_idx: int, heatwave_pct: float) -> dict:
 
     return {
         "timestamp": str(ts), "heatwave": heatwave_pct, "wind_from_deg": round(wind),
+        "weather_mode": weather_mode, "live_weather": live_weather,
         "excavation_target": excavation_target,
         "total_excavated": plan["total_excavated_tonnes"],
         "ghazipur": GHAZIPUR, "zones": zones, "plants": plants_out,
@@ -104,7 +126,8 @@ def index():
 def api_state():
     hour = int(request.args.get("hour", 0))
     heat = float(request.args.get("heatwave", 0))
-    return jsonify(compute_state(hour, heat))
+    live = request.args.get("live", "0") in ("1", "true", "True")
+    return jsonify(compute_state(hour, heat, live))
 
 
 if __name__ == "__main__":

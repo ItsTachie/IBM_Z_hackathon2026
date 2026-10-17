@@ -49,6 +49,7 @@
   </header>
 
   <div class="controls">
+    <label title="Use real current Ghazipur weather (Open-Meteo) for air temp, humidity, wind and drought. Landfill surface temp + methane stay simulated."><input type="checkbox" id="live" /> Live weather</label>
     <label title="Simulates a heatwave: raises temperature and lowers humidity before the model predicts, so fire risk rises.">Heatwave: <input id="heat" type="range" min="0" max="100" value="0" /></label>
     <span class="pill" id="heatval" title="Current heatwave intensity (0 = normal conditions, 100 = extreme heatwave).">0%</span>
     <span class="pill big" id="maxrisk" title="Highest predicted 24h fire risk across the 12 zones. Pill colour = alert level.">max risk --</span>
@@ -57,6 +58,7 @@
     <span class="pill" id="unalloc" title="Excavated tonnes that exceed all plant capacity today and cannot be processed.">unallocated -- t</span>
     <span class="pill" id="clock" title="Simulated date/time of the sensor reading currently shown.">--</span>
     <span class="pill" id="wind" title="Wind direction (degrees it blows FROM) at the highest-risk zone. Drives the downwind smoke alert.">wind --</span>
+    <span class="pill" id="wmode" title="Weather source: SIMULATED, or LIVE from Open-Meteo. Landfill surface temp + methane are always simulated.">weather --</span>
     <span class="legend" title="Zone circle colour = fire-risk level. Circle size grows with risk.">
       <span class="dot" style="background:#2ecc71"></span>low
       <span class="dot" style="background:#f39c12"></span>medium
@@ -139,6 +141,19 @@
       document.getElementById("unalloc").textContent = "unallocated " + Math.round(s.total_unallocated).toLocaleString() + " t";
       document.getElementById("clock").textContent = s.timestamp;
       document.getElementById("wind").textContent = "wind from " + s.wind_from_deg + "°";
+
+      const wm = document.getElementById("wmode");
+      if (s.weather_mode === "live" && s.live_weather) {
+        const lw = s.live_weather;
+        wm.textContent = `weather: LIVE ${lw.ambient_temp_c.toFixed(0)}°C / ${lw.humidity_pct.toFixed(0)}% RH`;
+        wm.style.background = COLORS.green;
+      } else if (s.weather_mode === "live-unavailable") {
+        wm.textContent = "weather: live unavailable → simulated";
+        wm.style.background = "#e67e22";
+      } else {
+        wm.textContent = "weather: SIMULATED";
+        wm.style.background = "rgba(255,255,255,.15)";
+      }
       document.getElementById("alert").textContent = s.resident_alert;
       document.getElementById("crew").textContent = s.crew_plan;
 
@@ -158,8 +173,9 @@
       document.getElementById("route").innerHTML = rt;
     }
 
+    const live = document.getElementById("live");
     function refresh() {
-      fetch(`/api/state?hour=${hour}&heatwave=${heat.value}`)
+      fetch(`/api/state?hour=${hour}&heatwave=${heat.value}&live=${live.checked ? 1 : 0}`)
         .then(r => r.json()).then(render).catch(console.error);
     }
 
@@ -167,6 +183,7 @@
       document.getElementById("heatval").textContent = heat.value + "%";
       refresh();
     });
+    live.addEventListener("change", refresh);
 
     // advance one simulated hour every 3 seconds
     refresh();
