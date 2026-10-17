@@ -79,6 +79,7 @@ distances from Ghazipur are APPROX (indicative, for routing-cost demonstration).
 | Daily excavation target (default) | 12,000 tonnes/day | SOURCED (Ghazipur target, above) |
 | Number of landfill zones | 12 | ASSUMPTION (operational sub-division for the demo; not a real published zoning) |
 | Per-zone daily excavation cap | excavation_target / 4 | ASSUMPTION (so the day's dig draws from the top few highest-risk zones) |
+| Dashboard excavation target vs heatwave | 8,000 t (0%) → 14,000 t (100%) | ASSUMPTION (high fire risk → excavate more aggressively; drives live route changes) |
 
 ## Real-data limits (why sensors are simulated)
 
