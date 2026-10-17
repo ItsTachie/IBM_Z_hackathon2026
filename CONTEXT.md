@@ -4,33 +4,44 @@
 
 ## The project
 
-A real-time decision system for the Ghazipur landfill (Delhi). It predicts fires before
-they start, decides what to dig first, and tells people what to do about it.
+Real-time decision-support for Delhi's Ghazipur landfill, built as a
+**Predict → Decide → Generate** pipeline:
 
-Four parts:
-
-1. **Model (ML)** — predicts which of the **12 landfill zones** will catch fire in the
-   next 24h, from: methane, surface temp, humidity, wind, days since rain.
-2. **Rules layer (not ML)** — highest-risk zone = dig first; excavated waste is split
-   across processing plants by capacity.
-3. **GenAI** — writes plain-English smoke/health alerts for residents downwind, and a
-   daily action plan for site crews.
-4. **Dashboard** — map of the 12 zones coloured by risk, simulated live sensor readings,
-   an action panel, and an alert panel.
-
-## Compute split
-
-- **Model training/inference runs on IBM LinuxONE** (Jupyter Lab).
-- **Laptop is for data, dashboard, and prototyping only.**
+- **Model A — Fire-risk classifier (ML).** Predicts per-zone fire risk in the next 24h from
+  sensor features (methane, surface/ambient temp, humidity, wind, days since rain).
+- **Model B — Dig-order + distribution planner (OPTIMISATION, not ML).** Ranks the 12 zones
+  by risk (riskiest dug first), splits excavated waste into fractions, and routes them to
+  processing plants by capacity while minimising transport distance (networkx min-cost flow).
+- **Model C — GenAI action engine (LLM).** Produces plain-English resident smoke/health
+  alerts (downwind of the highest-risk zone) and a daily excavation & truck-dispatch plan for
+  crews. Template-based offline; optional open-weights **IBM Granite** model on LinuxONE.
+- **Dashboard (Flask + Leaflet.js).** Risk map of the 12 zones, plant markers + routing
+  lines, a simulated live sensor stream, and a "heatwave" slider that changes risk/routes/
+  alerts live.
 
 ## Data
 
-- Synthetic sensor data (clearly disclosed as synthetic).
-- Real **NASA FIRMS** fire detections and **Open-Meteo** weather as supporting evidence.
+- **SIMULATED sensor data** (`data/landfill_sensors.csv`) — labelled as simulated everywhere
+  (code, docs, and dashboard). It is not real sensor measurement.
+- **Real-world figures** (landfill size, waste-fraction percentages, plant capacities) are
+  documented with source URLs in **`docs/SOURCES.md`**; anything without a source is marked
+  **UNVERIFIED**.
+- Open-Meteo weather and NASA FIRMS fire detections are noted as real-data options for
+  **future work**, not used in the current build.
 
-## Deadline rule
+## Compute / hard constraint
 
-If the **map + model + alert** aren't working together **by 8pm**, **cut the rules layer.**
+- Must run on **IBM LinuxONE (s390x Linux)**: CPU-only, no GPU, no x86-only binaries, no
+  Streamlit, no pyarrow. **No secrets in code or commits.**
+- Laptop is for prototyping; model training/inference targets LinuxONE Jupyter Lab.
+
+## Future work (explicitly out of current scope)
+
+- Fast-fashion diversion toggle (incoming textile trucks → Panipat mills)
+- Computer-vision classifiers (textile / waste image classification)
+- Waste-composition classifier
+- Landfill-growth forecast
+- Real-data site-level model (NASA FIRMS + Open-Meteo); multi-landfill / city-scale expansion
 
 ---
 
@@ -53,14 +64,14 @@ Git Credential Manager). User: SenorE7 / eobehie@gmail.com.
 ## Folder structure
 
 ```
-data/        synthetic + real data and generators
-models/      trained models + training/inference code (runs on LinuxONE)
-dashboard/   risk map, sensor readings, action + alert panels
-notebooks/   exploration / prototyping notebooks
-docs/        write-up, data disclosure, submission material
+data/        simulated data + generators (+ plants.csv)
+models/      trained model artifact + optimiser + genai code
+dashboard/   Flask app + Leaflet map UI
+notebooks/   model training / prototyping notebooks
+docs/        plan, sources, deployment + submission material
 ```
 
-## Working loop (confirmed)
+## Working loop
 
 Edit code / `.ipynb` → run (`python script.py` or
 `python -m nbconvert --to notebook --execute --inplace nb.ipynb`) → `git commit` →
@@ -69,10 +80,12 @@ Edit code / `.ipynb` → run (`python script.py` or
 ## Progress
 
 - [x] Jupyter installed, repo connected, working loop verified
-- [x] Project defined, folder structure created
-- [x] `data/generate_data.py` — synthetic hourly sensor dataset for 12 zones over 90 days
-- [ ] Fire-prediction model (on LinuxONE)
-- [ ] Rules layer (dig order + plant allocation)
-- [ ] GenAI alerts + daily action plan
-- [ ] Dashboard (map + sensors + action + alert panels)
-- [ ] Integrate NASA FIRMS + Open-Meteo supporting evidence
+- [x] Simulated hourly sensor dataset (`data/generate_data.py` → `data/landfill_sensors.csv`)
+- [ ] Step 0 — doc corrections + `docs/SOURCES.md`
+- [ ] Step 1 — Model A fire-risk classifier
+- [ ] Step 2 — Model B dig-order + optimiser
+- [ ] Step 3 — Model C GenAI alerts + plan
+- [ ] Step 4 — Flask + Leaflet dashboard
+- [ ] Step 5 — end-to-end checkpoint
+- [ ] Step 6 — LinuxONE readiness (requirements, setup doc, container)
+- [ ] Step 7 — submission docs (README, flowchart)
