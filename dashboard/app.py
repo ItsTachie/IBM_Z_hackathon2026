@@ -42,11 +42,13 @@ def color_for(risk: float) -> str:
 
 
 def apply_heatwave(rows, pct: float):
+    """Realistic severe-heatwave shift: +10 C air, +16 C landfill surface (it amplifies),
+    -35% RH at 100%. Magnitudes in docs/SOURCES.md."""
     rows = rows.copy()
     f = pct / 100.0
-    rows["surface_temp_c"] = rows["surface_temp_c"] + f * 20.0
-    rows["ambient_temp_c"] = rows["ambient_temp_c"] + f * 20.0
-    rows["humidity_pct"] = (rows["humidity_pct"] - f * 40.0).clip(lower=5.0)
+    rows["ambient_temp_c"] = rows["ambient_temp_c"] + f * 10.0
+    rows["surface_temp_c"] = rows["surface_temp_c"] + f * 16.0
+    rows["humidity_pct"] = (rows["humidity_pct"] - f * 35.0).clip(lower=8.0)
     return rows
 
 

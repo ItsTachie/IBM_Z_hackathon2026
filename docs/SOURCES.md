@@ -50,6 +50,23 @@ routing, and fold recyclables into inerts. Values chosen within the sourced rang
 | Textiles | 5% | ASSUMPTION (subset of combustibles) |
 | Inert | 17% | ASSUMPTION (within sourced 9–20%) |
 
+## Fire-risk model (how the simulated label is generated)
+
+The sensor data is simulated, but the relationship between features and `fire_next_24h` is
+grounded in published landfill-fire science. Three terms combine into a latent risk:
+
+| Term | Basis | Value/threshold | Status | Source |
+|---|---|---|---|---|
+| Fire-weather (temp↑, humidity↓, wind↑, drought↑) | McArthur Fire Danger Index form | coeffs 0.0338·T − 0.0345·RH + 0.0234·wind + 0.5·ln(drought+1) | SOURCED (form) | McArthur FDI |
+| Thermal self-heating | MSW smoulder onset | risk climbs as surface temp → **80 °C** | SOURCED | EPA subsurface smouldering |
+| Methane | lower explosive limit | risk rises toward **50,000 ppm (5% LEL)** | SOURCED | ATSDR landfill gas |
+| Seasonality | landfill fires peak Mar–Aug | Apr–Jun hot window modelled | SOURCED | SCS Engineers |
+
+- SCS Engineers — Understanding & Managing Landfill Fires — https://www.scsengineers.com/wp-content/uploads/2025/01/Understanding-and-Managing-Landfill-Fires-2024.pdf
+- EPA — Subsurface Smouldering Event (80 °C threshold, 100–300 °C smoulder) — https://semspub.epa.gov/work/07/30286004.pdf
+- ATSDR — Landfill Gas Safety (methane LEL 5% = 50,000 ppm) — https://www.atsdr.cdc.gov/hac/landfill/pdfs/landfill_2001_ch3.pdf
+- McArthur Fire Danger Index formula — https://dayboro.au/fire-danger-index/
+
 ## Destination plants (used in `data/plants.csv`)
 
 Capacities marked SOURCED are real plant figures; others are ASSUMPTION. Coordinates and
@@ -80,6 +97,7 @@ distances from Ghazipur are APPROX (indicative, for routing-cost demonstration).
 | Number of landfill zones | 12 | ASSUMPTION (operational sub-division for the demo; not a real published zoning) |
 | Per-zone daily excavation cap | excavation_target / 4 | ASSUMPTION (so the day's dig draws from the top few highest-risk zones) |
 | Dashboard excavation target vs heatwave | 8,000 t (0%) → 14,000 t (100%) | ASSUMPTION (high fire risk → excavate more aggressively; drives live route changes) |
+| Dashboard heatwave shift at 100% | +10 °C air, +16 °C surface, −35% RH | ASSUMPTION (severe but plausible heatwave; India heatwaves run ~5–12 °C above normal) |
 
 ## Real-data limits (why sensors are simulated)
 
