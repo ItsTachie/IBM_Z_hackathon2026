@@ -58,10 +58,14 @@ distances from Ghazipur are APPROX (indicative, for routing-cost demonstration).
 | Plant (type) | Capacity used | Capacity status | Dist. from Ghazipur | Dist. status |
 |---|---|---|---|---|
 | Okhla Waste-to-Energy (wte) | 1,800 TPD | SOURCED | ~15 km | APPROX |
-| Cement kiln — RDF co-processing (cement_kiln) | 600 TPD | ASSUMPTION | ~120 km | APPROX |
-| Compost / soil-reuse site (soil_reuse) | 4,000 TPD | ASSUMPTION | ~5 km | APPROX |
+| Cement kiln — RDF co-processing (cement_kiln) | 1,200 TPD | ASSUMPTION | ~120 km | APPROX |
+| Compost / soil-reuse site (soil_reuse) | 7,000 TPD | ASSUMPTION | ~5 km | APPROX |
 | Panipat textile hub (textile_hub) | 300 TPD | SOURCED | ~90 km | APPROX (per project brief) |
 | Inert / road-fill (inert_road) | 3,000 TPD | ASSUMPTION | ~10 km | APPROX |
+
+> Capacities for soil-reuse, inert and cement are ASSUMPTION values chosen so the daily
+> excavation target (12,000 t) is *mostly* processable; a small combustible shortfall is
+> left deliberately so the optimiser demonstrates reporting of unallocated tonnes.
 
 - Delhi WtE capacities (Okhla 1,800 TPD etc.) — BioEnergy Times — https://bioenergytimes.com/delhi-to-expand-biogas-and-waste-processing-capacity-by-13550-tpd-to-cut-landfill-burden/
 - Panipat textile recycling (~250–300 TPD, world's largest hub) — The Tribune — https://www.tribuneindia.com/news/haryana/handloom-city-panipat-weaves-worlds-largest-recycling-empire/
@@ -74,6 +78,7 @@ distances from Ghazipur are APPROX (indicative, for routing-cost demonstration).
 | Truck (tipper) capacity for dispatch counts | ~10 tonnes | ASSUMPTION (typical 9–16 t) |
 | Daily excavation target (default) | 12,000 tonnes/day | SOURCED (Ghazipur target, above) |
 | Number of landfill zones | 12 | ASSUMPTION (operational sub-division for the demo; not a real published zoning) |
+| Per-zone daily excavation cap | excavation_target / 4 | ASSUMPTION (so the day's dig draws from the top few highest-risk zones) |
 
 ## Real-data limits (why sensors are simulated)
 
