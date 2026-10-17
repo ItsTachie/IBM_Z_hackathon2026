@@ -21,6 +21,12 @@
     .controls input[type=range] { width: 220px; }
     .pill { font-size: 12px; background: rgba(255,255,255,.15); padding: 3px 8px; border-radius: 10px; }
     .pill.big { font-size: 14px; font-weight: 700; padding: 4px 10px; transition: background .2s; }
+    .pill { cursor: help; }
+    header .subtitle { font-size: 12px; font-weight: 400; opacity: .85; margin-top: 3px; }
+    .desc { font-size: 11px; color: #666; margin: 0 0 7px; line-height: 1.35; }
+    .maphint { position: absolute; z-index: 500; bottom: 8px; left: 8px; background: rgba(255,255,255,.9);
+      border: 1px solid #ddd; border-radius: 6px; padding: 4px 8px; font-size: 11px; color: #333; max-width: 260px; }
+    #map { position: relative; }
     .card { background: #fff; border: 1px solid #e2e2e0; border-radius: 8px; padding: 10px 12px;
       margin-bottom: 12px; }
     .card h2 { margin: 0 0 6px; font-size: 14px; text-transform: uppercase; letter-spacing: .04em; color: #12343b; }
@@ -37,18 +43,21 @@
     <h1>Ghazipur Landfill Fire &amp; Contamination Shield
       <span class="sim">SIMULATED SENSOR DATA</span>
     </h1>
+    <div class="subtitle">Pipeline: <b>Predict</b> (Model A, ML fire risk) &rarr;
+      <b>Decide</b> (Model B, routing optimiser) &rarr; <b>Generate</b> (Model C, GenAI alerts).
+      Data auto-advances 1 hour every 3 s. Drag the Heatwave slider to stress-test.</div>
   </header>
 
   <div class="controls">
-    <label>Heatwave: <input id="heat" type="range" min="0" max="100" value="0" /></label>
-    <span class="pill" id="heatval">0%</span>
-    <span class="pill big" id="maxrisk">max risk --</span>
-    <span class="pill" id="atrisk">-- zones at risk</span>
-    <span class="pill" id="target">excavate -- t/day</span>
-    <span class="pill" id="unalloc">unallocated -- t</span>
-    <span class="pill" id="clock">--</span>
-    <span class="pill" id="wind">wind --</span>
-    <span class="legend">
+    <label title="Simulates a heatwave: raises temperature and lowers humidity before the model predicts, so fire risk rises.">Heatwave: <input id="heat" type="range" min="0" max="100" value="0" /></label>
+    <span class="pill" id="heatval" title="Current heatwave intensity (0 = normal conditions, 100 = extreme heatwave).">0%</span>
+    <span class="pill big" id="maxrisk" title="Highest predicted 24h fire risk across the 12 zones. Pill colour = alert level.">max risk --</span>
+    <span class="pill" id="atrisk" title="How many of the 12 zones are amber or red (elevated fire risk).">-- zones at risk</span>
+    <span class="pill" id="target" title="Tonnes the crews aim to excavate today. Rises with the heatwave so more fire-prone waste is removed.">excavate -- t/day</span>
+    <span class="pill" id="unalloc" title="Excavated tonnes that exceed all plant capacity today and cannot be processed.">unallocated -- t</span>
+    <span class="pill" id="clock" title="Simulated date/time of the sensor reading currently shown.">--</span>
+    <span class="pill" id="wind" title="Wind direction (degrees it blows FROM) at the highest-risk zone. Drives the downwind smoke alert.">wind --</span>
+    <span class="legend" title="Zone circle colour = fire-risk level. Circle size grows with risk.">
       <span class="dot" style="background:#2ecc71"></span>low
       <span class="dot" style="background:#f39c12"></span>medium
       <span class="dot" style="background:#e74c3c"></span>high
@@ -56,12 +65,36 @@
   </div>
 
   <div class="wrap">
-    <div id="map"></div>
+    <div id="map">
+      <div class="maphint">Circles = 12 landfill zones (colour &amp; size = fire risk).
+        Grey lines = excavated waste trucked to plants (thickness = tonnes).
+        Dark markers = processing plants.</div>
+    </div>
     <div class="side">
-      <div class="card alert"><h2>Resident smoke / health alert</h2><pre id="alert">...</pre></div>
-      <div class="card"><h2>Dig order (riskiest first)</h2><table id="dig"></table></div>
-      <div class="card"><h2>Routing table</h2><table id="route"></table></div>
-      <div class="card"><h2>Crew excavation &amp; dispatch plan</h2><pre id="crew">...</pre></div>
+      <div class="card alert">
+        <h2>Resident smoke / health alert</h2>
+        <p class="desc">Model C (GenAI): a plain-English warning for neighbourhoods
+          <b>downwind</b> of the highest-risk zone, based on wind direction.</p>
+        <pre id="alert">...</pre>
+      </div>
+      <div class="card">
+        <h2>Dig order (riskiest first)</h2>
+        <p class="desc">Models A + B: which zones to excavate today, ranked by predicted
+          fire risk so the most dangerous waste is removed first.</p>
+        <table id="dig"></table>
+      </div>
+      <div class="card">
+        <h2>Routing table</h2>
+        <p class="desc">Model B (optimiser): where each waste fraction is sent &mdash; chosen to
+          minimise trucking distance while never exceeding a plant's capacity.</p>
+        <table id="route"></table>
+      </div>
+      <div class="card">
+        <h2>Crew excavation &amp; dispatch plan</h2>
+        <p class="desc">Model C (GenAI): the day's dig list and truck dispatch for site crews,
+          generated from the optimiser's output.</p>
+        <pre id="crew">...</pre>
+      </div>
     </div>
   </div>
 
